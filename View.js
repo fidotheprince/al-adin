@@ -7,6 +7,7 @@ import {
   caloriesInputMsg,
   saveMealMsg,
   deleteMealMsg,
+  editMealMsg,
 } from './Update'; //this is the () from the update.js
 
 const {
@@ -46,6 +47,12 @@ const {
         i({
           className: 'ph1 fa fa-trash-o pointer',
           onclick: () => dispatch(deleteMealMsg(meal.id)),
+        }),
+        i({
+          className: 'ph1 fa fa-pencil-square-o pointer',
+          //meal.id is the msg that gets pass into the
+          //editMealMsg()
+          onclick: () => dispatch(editMealMsg(meal.id)),
         }),
       ]),
     ]);

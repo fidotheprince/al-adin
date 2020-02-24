@@ -6,6 +6,7 @@ const MSGS = {
   CALORIES_INPUT: 'CALORIES_INPUT',
   SAVE_MEAL: 'SAVE_MEAL',
   DELETE_MEAL: 'DELETE_MEAL',
+  EDIT_MEAL: 'EDIT_MEAL',
 };
 
 export function showFormMsg(showForm) {
@@ -37,6 +38,14 @@ export function deleteMealMsg(id) {
     id,
   };
 };
+//editId is the given id of the meal
+//clicked on through the edit icon
+export function editMealMsg(editId) {
+  return {
+    type: MSGS.EDIT_MEAL,
+    editId,
+  };
+}
 
 function update(msg, model) {
   switch (msg.type) {
@@ -56,7 +65,15 @@ function update(msg, model) {
       return { ...model, calories };
     }
     case MSGS.SAVE_MEAL: {
-      return add(msg, model);
+      const { editId } = model;
+      // when you click the save button
+      // is the edit set to null or not
+      // if editId exist (editId is id of meal record clicked)
+      // run the edit function
+      const updatedModel = editId !== null ?
+          edit(msg, model) :
+          add(msg, model);
+        return updatedModel;
     }
     case MSGS.DELETE_MEAL: {
       const { id } = msg;
@@ -64,6 +81,27 @@ function update(msg, model) {
         meal => meal.id !== id
         , model.meals);
         return { ...model, meals };
+    }
+    case MSGS.EDIT_MEAL: {
+      // this is the editId is the id generated for every new meal
+      //record created
+      const { editId } = msg;
+      const meal = R.find(
+        meal => meal.id === editId,
+        model.meals);
+        //this unpack the description and calories from
+        //the meal with the corresponding meal
+        //essentially to set them to be edited
+        //const meal holds the matching meal from meals array
+        const { description, calories } = meal;
+
+        return  {
+          ...model,
+          editId,
+          description,
+          calories,
+          showForm: true,
+        }
     }
   }
   return model;
@@ -82,5 +120,28 @@ function add(msg, model) {
     showForm: false
   }
 };
+
+function edit(msg, model) {
+  const { description, calories, editId } = model;
+  // sets meals variable to the meal(id) that matched the editId unpacked above
+  const meals = R.map(meal => {
+    if (meal.id === editId) {
+      // unpacks description and calories to be edited
+      return { ...meal, description, calories };
+    }
+    //if meal.id doesnt == editId
+    //just return the meal
+    return meal;
+  }, model.meals);
+  //resets app to its default state
+  return {
+    ...model,
+    meals,
+    description: '',
+    calories: 0,
+    showForm: false,
+    editId: null,
+  };
+}
 
 export default update;
